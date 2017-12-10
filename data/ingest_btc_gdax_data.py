@@ -5,8 +5,11 @@ Download and clean GDAX historical data
 @author: Mason
 """
 
-import datetime as dt, pandas as pd
-import gdax, time, PyQt5, pyodbc, os, sqlalchemy, urllib
+import datetime as dt
+import pandas as pd
+from utils import sql
+import time
+import gdax
 
 public_client = gdax.PublicClient()
 
@@ -51,8 +54,7 @@ btc = btc.sort_index().resample('min').pad()
 btc_diff = btc.diff()
 btc.loc[btc_diff['volume'] == 0, 'volume'] = 0
 
-# params
-engine = sqlalchemy.create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
+engine = sql.create_engine('BTC_DB')
 
 start = time.time()
 btc.to_sql('hist_minute_bars', engine, if_exists='append', index_label='timestamp')
