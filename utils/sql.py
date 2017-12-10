@@ -14,5 +14,5 @@ def connect_to_db(db_name):
 	port = config['db_name']['PORT']
 
 	cnxn = pyodbc.connect('DRIVER='+driver+';PORT='+port+';SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
-	cursor = cnxn.cursor()
+	return cnxn
 
