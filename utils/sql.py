@@ -2,6 +2,7 @@ import sqlalchemy
 import os
 import configparser
 import urllib
+import pyodbc
 
 
 def create_engine(config_name):
@@ -15,6 +16,14 @@ def create_engine(config_name):
     -------
     sqlalchemy engine
     '''
+
+    config_string = get_config_string(config_name)
+    params = urllib.parse.quote(config_string)
+    engine = sqlalchemy.create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
+    return engine
+
+
+def get_config_string(config_name):
     config = configparser.ConfigParser()
 
     # read more about working directory at https://stackoverflow.com/questions/13800515/cant-load-relative-config-file-using-configparser-from-sub-directory
@@ -27,6 +36,11 @@ def create_engine(config_name):
     driver = config[config_name]['DRIVER']
     port = config[config_name]['PORT']
 
-    params = urllib.parse.quote('DRIVER=' + driver + ';SERVER=' + server + ';PORT=' + port + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
-    engine = sqlalchemy.create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
-    return engine
+    config_string = 'DRIVER=' + driver + ';SERVER=' + server + ';PORT=' + port + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password
+    return config_string
+
+
+def connect_to_db(config_name):
+    config_string = get_config_string(config_name)
+    conn = pyodbc.connect(config_string)
+    return conn
