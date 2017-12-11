@@ -27,7 +27,7 @@ def download_gdax_data(dates):
         counter = 0
         print(cur_date)
         start_date = cur_date - dt.timedelta(seconds=15) # The first date is not inclusive, so we need to start earlier by 15 seconds
-        end_date = cur_date + dt.timedelta(hours=3)
+        end_date = cur_date + dates.freq
         rawdata = public_client.get_product_historic_rates('BTC-USD', start_date, end_date)  # the default is 1-minute time-stamps. First entry is the most recent data point
 
         while not rawdata or type(rawdata) is dict:
