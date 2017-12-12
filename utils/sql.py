@@ -1,8 +1,8 @@
 import sqlalchemy
-import os
-import configparser
 import urllib
 import pyodbc
+import pandas as pd
+import utils.config as cf
 
 
 def create_engine(config_name):
@@ -17,30 +17,26 @@ def create_engine(config_name):
     sqlalchemy engine
     '''
 
-    config_string = get_config_string(config_name)
+    config_string = cf.get_sql_credentials(config_name)
     params = urllib.parse.quote(config_string)
     engine = sqlalchemy.create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
     return engine
 
 
-def get_config_string(config_name):
-    config = configparser.ConfigParser()
-
-    # read more about working directory at https://stackoverflow.com/questions/13800515/cant-load-relative-config-file-using-configparser-from-sub-directory
-    config.read(os.path.join(os.path.abspath(os.path.dirname('__file__')), 'conf', 'config.ini'))
-
-    server = config[config_name]['SERVER']
-    database = config[config_name]['DB']
-    username = config[config_name]['USERNAME']
-    password = config[config_name]['PASSWORD']
-    driver = config[config_name]['DRIVER']
-    port = config[config_name]['PORT']
-
-    config_string = 'DRIVER=' + driver + ';SERVER=' + server + ';PORT=' + port + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password
-    return config_string
-
-
 def connect_to_db(config_name):
-    config_string = get_config_string(config_name)
+    config_string = cf.get_sql_credentials(config_name)
     conn = pyodbc.connect(config_string)
     return conn
+
+
+def execute(query, conn):
+    '''Wrapper to execute SQL queries'''
+    cursor = conn.cursor().execute(query)
+
+    columns = [column[0] for column in cursor.description]
+
+    result = pd.DataFrame(columns=columns)
+    for row in cursor.fetchall():
+        result = result.append(pd.DataFrame(list(row), index=columns).T)
+
+    return result

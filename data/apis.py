@@ -12,7 +12,7 @@ import time
 import gdax
 
 
-def download_gdax_data(dates):
+def download_gdax_data(dates, product_id='BTC-USD'):
     '''
     Parameters
     ----------
@@ -28,13 +28,13 @@ def download_gdax_data(dates):
         print(cur_date)
         start_date = cur_date - dt.timedelta(seconds=15) # The first date is not inclusive, so we need to start earlier by 15 seconds
         end_date = cur_date + dates.freq
-        rawdata = public_client.get_product_historic_rates('BTC-USD', start_date, end_date)  # the default is 1-minute time-stamps. First entry is the most recent data point
+        rawdata = public_client.get_product_historic_rates(product_id, start_date, end_date)  # the default is 1-minute time-stamps. First entry is the most recent data point
 
         while not rawdata or type(rawdata) is dict:
             time.sleep(3)
-            rawdata = public_client.get_product_historic_rates('BTC-USD', start_date, end_date)
+            rawdata = public_client.get_product_historic_rates(product_id, start_date, end_date)
             counter = counter + 1
-            if counter > 2:
+            if counter > 5:
                 print('Giving up on ' + cur_date.strftime('%Y-%m-%d %H:%M:%S'))
                 break
 
